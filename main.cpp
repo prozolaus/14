@@ -4,19 +4,30 @@
 class Animal
 {
 public:
+  //void set_name(string name) { nm = name; }
   string get_name() const { return nm; }
   virtual string speak() const = 0;
+  string animal_speak();
 
 protected:
+  //Animal() : nm{"???"} {}
   Animal(string name) : nm{name} {}
 
 private:
   string nm;
 };
 
+string Animal::animal_speak()
+{
+  ostringstream os;
+  os << get_name() << " says " << speak();
+  return os.str();
+}
+
 class Dog : public Animal
 {
 public:
+  //Dog() : Animal() {}
   Dog(string name) : Animal(name) {}
   string speak() const { return "Woof!"; }
 };
@@ -24,24 +35,18 @@ public:
 class Cat : public Animal
 {
 public:
+  //Cat() : Animal() {}
   Cat(string name) : Animal(name) {}
   string speak() const { return "Meow!"; }
 };
-
-string animal_speak(const Animal &animal)
-{
-  ostringstream os;
-  os << animal.get_name() << " says " << animal.speak();
-  return os.str();
-}
 
 int main()
 {
 
   Dog aza{"Aza"};
   Cat dusia{"Dusia"};
+  //dusia.set_name("Musia");
 
-  cout << animal_speak(aza) << endl;
-  cout << animal_speak(dusia) << endl;
-
+  cout << aza.animal_speak() << endl;
+  cout << dusia.animal_speak() << endl;
 }
