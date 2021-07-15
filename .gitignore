@@ -1,0 +1,4 @@
+*.o
+*.txt
+/hello_fltk
+*.html
