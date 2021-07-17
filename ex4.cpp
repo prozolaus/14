@@ -1,7 +1,12 @@
 #include "Simple_window.h"
 #include "Graph.h"
 
+struct Immobile_Circle : Circle
+{
+  using Circle::Circle;
 
+  void move(int dx, int dy) override {};
+};
 
 int main()
 {
@@ -12,7 +17,11 @@ int main()
 
   Simple_window win{top_left, x_max(), y_max(), "Canvas"};
 
-  
+  Immobile_Circle c{center,100};
+  win.attach(c);
 
   win.wait_for_button();
+  c.move(200,200);
+  win.wait_for_button();
+
 }
