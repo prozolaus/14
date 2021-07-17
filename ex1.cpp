@@ -1,46 +1,24 @@
 #include "Simple_window.h"
 #include "Graph.h"
 
-int sgn(double d)
-{
-  if (d < 0)
-    return -1;
-  else if (d == 0)
-    return 0;
-  else
-    return 1;
-}
-
-vector<Point> coordinates(double a, double b, double m, double n, int N, Point c)
-{
-  vector<Point> vp;
-  double angle;
-  int x, y, tempx = 0, tempy = 0;
-  for (int i = 0; i < N; i++)
-  {
-    angle = 2 * M_PI * i / N;
-    x = pow(abs(cos(angle)), (2 / m)) * a * sgn(cos(angle));
-    y = pow(abs(sin(angle)), (2 / n)) * b * sgn(sin(angle));
-    if (tempx == x && tempy == y)
-      continue;
-    tempx = x;
-    tempy = y;
-    vp.push_back(Point{x + c.x, y + c.y});
-  }
-  return vp;
-}
-
-struct Smiley : Circle
+struct Face : Circle
 {
   using Circle::Circle;
   void draw_lines() const override;
+  int mouth_width() const { return w; }
+  //void put_on_hat() const;
+
+private:
+  virtual void draw_mouth() const;
+
+  Point fc = Circle::center(); //face center
+  int fr = Circle::radius();   //face radius
+  int w = fr * 1.1;            //mouth (ellipse) width
 };
 
-void Smiley::draw_lines() const
+void Face::draw_lines() const
 {
   Circle::draw_lines();
-  Point fc = Circle::center();   //face center
-  int fr = Circle::radius();     //face radius
   int eye_d = fr / 5;            //eye diameter
   int eye_r = eye_d / 2;         //eye radius
   int k = fr / 2.5;              //eyes center position displacement relative to the face center
@@ -49,36 +27,84 @@ void Smiley::draw_lines() const
   //we need to set the top left corners to draw our eyes (circles)
   fl_arc(lec.x - eye_r, lec.y - eye_r, eye_d, eye_d, 0, 360); //draw the left eye
   fl_arc(rec.x - eye_r, rec.y - eye_r, eye_d, eye_d, 0, 360); //draw the right eye
-  int w = fr * 1.1;                                           //mouth (ellipse) width
-  int h = fr / 2;                                             //mouth (ellipse) height
-  int l = fr / 10;                                            //distance from face radius to center of mouth
-  fl_arc(fc.x - w / 2, fc.y + l, w, h, 200, 340);             //draw the smile
+  draw_mouth();
+  //put_on_hat();
 }
 
-struct Frowny : Circle
+void Face::draw_mouth() const
 {
-  using Circle::Circle;
-  void draw_lines() const override;
+  int l = fr / 2; //distance from face radius to center of mouth
+  fl_line(fc.x - w / 2, fc.y + l, fc.x + w / 2, fc.y + l);
+}
+/*
+void Face::put_on_hat() const
+{
+  Point p1{fc.x - fr * 1.5, fc.y - 0.7 * fr};
+  Point p2{fc.x + fr * 1.5, fc.y - 0.7 * fr};
+  Point p3{fc.x, fc.y - 2 * fr};
+
+  fl_line(p1.x, p1.y, p2.x, p2.y);
+  fl_line(p2.x, p2.y, p3.x, p3.y);
+  fl_line(p3.x, p3.y, p1.x, p1.y);
+}
+*/
+//-------------------------------------------------------------------------------------
+
+struct Smiley : Face
+{
+  using Face::Face;
+
+private:
+  void draw_mouth() const override;
 };
 
-void Frowny::draw_lines() const
+void Smiley::draw_mouth() const
 {
-  Circle::draw_lines();
-  Point fc = Circle::center();   //face center
-  int fr = Circle::radius();     //face radius
-  int eye_d = fr / 5;            //eye diameter
-  int eye_r = eye_d / 2;         //eye radius
-  int k = fr / 2.5;              //eyes center position displacement relative to the face center
-  Point lec{fc.x - k, fc.y - k}; //lec - left eye center
-  Point rec{fc.x + k, fc.y - k}; //rec - right eye center
-  //we need to set the top left corners to draw our eyes (circles)
-  fl_arc(lec.x - eye_r, lec.y - eye_r, eye_d, eye_d, 0, 360); //draw the left eye
-  fl_arc(rec.x - eye_r, rec.y - eye_r, eye_d, eye_d, 0, 360); //draw the right eye
-  int w = fr * 1.1;                                           //mouth (ellipse) width
-  int h = fr / 2;                                             //mouth (ellipse) height
-  int l = fr / 10 + h / 2;                                    //distance from face radius to center of mouth
-  fl_arc(fc.x - w / 2, fc.y + l, w, h, 20, 160);              //draw the frowny smile
+  int fr = Circle::radius();
+  Point fc = Circle::center();
+  int w = Face::mouth_width();
+  int h = fr / 2;                                 //mouth (ellipse) height
+  int l = fr / 10;                                //distance from face radius to center of mouth
+  fl_arc(fc.x - w / 2, fc.y + l, w, h, 200, 340); //draw the smile
 }
+
+struct Frowny : Face
+{
+  using Face::Face;
+
+private:
+  void draw_mouth() const override;
+};
+
+void Frowny::draw_mouth() const
+{
+  int fr = Circle::radius();
+  Point fc = Circle::center();
+  int w = Face::mouth_width();
+  int h = fr / 2;                                //mouth (ellipse) height
+  int l = fr / 10 + h / 2;                       //distance from face radius to center of mouth
+  fl_arc(fc.x - w / 2, fc.y + l, w, h, 20, 160); //draw the frowny smile
+}
+
+struct Hat : Polygon
+{
+  Hat(Point face_center, int face_radius);
+private:
+  Point fc;
+  int fr;
+};
+
+Hat::Hat(Point face_center, int face_radius)
+    : fc{face_center}, fr{face_radius}
+{
+  Point p1{fc.x - fr * 1.5, fc.y - 0.7 * fr};
+  Point p2{fc.x + fr * 1.5, fc.y - 0.7 * fr};
+  Point p3{fc.x, fc.y - 2 * fr};
+  add(p1);
+  add(p2);
+  add(p3);
+}
+
 
 int main()
 {
@@ -89,34 +115,31 @@ int main()
 
   Simple_window win{top_left, x_max(), y_max(), "Canvas"};
 
-  int radius = 150;
+  int radius = 100;
 
   Point sm{center.x - center.x / 2, center.y};
   Smiley smiley{sm, radius};
   win.attach(smiley);
 
-  Ellipse hat_sm{Point{smiley.center().x, smiley.center().y - smiley.radius()}, radius * 1.5, radius / 5};
+  Hat hat_sm{sm,radius};
+  hat_sm.set_fill_color(Color(1));
   win.attach(hat_sm);
 
-  vector<Point> vp = coordinates(100, 100, 4, 4, 200, Point{smiley.center().x, smiley.center().y - smiley.radius() - 100});
-  Closed_polyline poly;
-  for (Point p : vp)
-    poly.add(p);
-  win.attach(poly);
+  Point pf{center.x, center.y};
+  Face face{pf, radius};
+  win.attach(face);
 
+  Hat hat_pf{pf,radius};
+  hat_pf.set_fill_color(Color(3));
+  win.attach(hat_pf);
 
   Point fr{center.x + center.x / 2, center.y};
   Frowny frowny{fr, radius};
   win.attach(frowny);
 
-  Ellipse hat_fr{Point{frowny.center().x, frowny.center().y - frowny.radius()}, radius * 1.5, radius / 5};
+  Hat hat_fr{fr,radius};
+  hat_fr.set_fill_color(Color(4));
   win.attach(hat_fr);
-
-  vector<Point> vp2 = coordinates(100, 100, 4, 4, 200, Point{frowny.center().x, frowny.center().y - frowny.radius() - 100});
-  Closed_polyline poly2;
-  for (Point p : vp2)
-    poly2.add(p);
-  win.attach(poly2);
 
   win.wait_for_button();
 }
