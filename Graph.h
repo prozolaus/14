@@ -11,6 +11,8 @@
 #include "Point.h"
 #include "std_lib_facilities.h"
 #include <functional>
+#include <algorithm>
+
 
 namespace Graph_lib {
 
@@ -383,6 +385,21 @@ struct Bad_image : Fl_Image {
 };
 
 //------------------------------------------------------------------------------
+
+struct Striped_closed_polyline : Polygon
+{
+  using Polygon::Polygon;
+  void draw_lines() const override;
+
+private:
+  void draw_borders() const;
+  void fill() const;
+  pair<int, int> get_min_y() const;
+  pair<int, int> get_max_y() const;
+  void fill_vpl_vpr(vector<Point> &vpl, vector<Point> &vpr, int min_y_p, int max_y_p) const;
+};
+
+//-------------------------------------------------------------------------------
 
 } // of namespace Graph_lib
 
