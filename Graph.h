@@ -401,6 +401,17 @@ private:
 
 //-------------------------------------------------------------------------------
 
+struct Striped_Circle : Circle
+{
+  using Circle::Circle;
+  void draw_lines() const override;
+
+private:
+  int r = Circle::radius();
+};
+
+//-------------------------------------------------------------------------------
+
 } // of namespace Graph_lib
 
 #endif

@@ -731,7 +731,7 @@ namespace Graph_lib
             }
             else
                 vprf.push_back(Point{int(pis1.x + u2.first * (p2.x - pis1.x) - 1), int(pis1.y + u2.first * (p2.y - pis1.y))});
-            
+
             fl_line(vplf[count].x, vplf[count].y, vprf[count].x, vprf[count].y);
             count++;
         }
@@ -749,6 +749,27 @@ namespace Graph_lib
 
         if (fill_color().visibility())
             fill();
+    }
+
+    //-----------------------------------------------------------------------------------
+
+    void Striped_Circle::draw_lines() const
+    {
+        if (color().visibility())
+            fl_arc(point(0).x, point(0).y, r + r, r + r, 0, 360);
+
+        if (fill_color().visibility())
+        { // fill
+            fl_color(fill_color().as_int());
+            const int step = 1;
+            for (int i = 0; i < r; i += step)
+            {
+                double angle = asin((double)i / r);
+                int xx = r * cos(angle);
+                fl_line(point(0).x + r - xx, point(0).y + r - i, point(0).x + r + xx - 1, point(0).y + r - i);
+                fl_line(point(0).x + r - xx, point(0).y + r + i, point(0).x + r + xx - 1, point(0).y + r + i);
+            }
+        }
     }
 
     //-----------------------------------------------------------------------------------
